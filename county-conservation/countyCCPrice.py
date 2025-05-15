@@ -36,15 +36,27 @@ matDict = {'Aged Bark Mulch': 52, 'Cedar Mulch': 52.5, 'Black Dyed Mulch': 27, '
            'Compost': 19, 'Fill Dirt': 15, 'DGA': 26, '3/4" River Rock': 70, '1.5" x 3" River Rock': 95, '3" x 5" River Rock': 95,
            '3/4" Red Driveway Stone': 50, '3/4" Grey Driveway Stone': 50, 'Modified Stone 2A': 38, 'Stone Dust Screenings': 38,
            'Pea Gravel': 54, 'Sand': 28}
+matShortcuts = {'bark mulch': 'Aged Bark Mulch', 'Bark Mulch': 'Aged Bark Mulch', 'cedar mulch': 'Cedar Mulch', 'black mulch': 'Black Dyed Mulch',
+                'brown mulch': 'Brown Dyed Mulch', 'red mulch': 'Red Dyed Mulch', 'Root Mulch': 'Premium Root Mulch', 'root mulch':
+                'Premium Root Mulch', 'Hardwood Mulch': 'Premium Hardwood', 'hardwood': 'Premium Hardwood', 'playground mulch': 'Playground Mulch',
+                'Woodchips': 'Virgin Woodchips', 'woodchips': 'Virgin Woodchips', 'virgin woodchips': 'Virgin Woodchips', 'top soil': 'Top Soil',
+                'compost': 'Compost', 'fill dirt': 'Fill Dirt', '3/4 river rock': '3/4" River Rock', '1.5x3 river rock' : '1.5" x 3" River Rock',
+                '3x5 river rock': '3" x 5" River Rock', 'red driveway stone': '3/4" Red Driveway Stone', 'grey driveway stone':
+                '3/4" Grey Driveway Stone', 'modified stone': 'Modified Stone 2A', 'stone dust': 'Stone Dust Screenings', 'pea gravel':
+                'Pea Gravel', 'sand': 'Sand'}
 
 towns, mats = [], []
 for key in deliveryDict:
     towns.append(key)
 for key in matDict:
     mats.append(key)
+for key in matShortcuts:
+    mats.append(key)
 
 def priceCalcStr(mat: str, qt: int, town: str) -> str:
-    if mat not in mats: return 'Material not found.'
+    if mat not in matDict:
+        if mat not in matShortcuts: return 'Material not found.'
+        else: mat = matShortcuts[mat]
     if town not in towns: return 'Town not found or not available to deliver to.'
     
     matRate, delPrice, tax = matDict[mat], deliveryDict[town], 0.06625
@@ -68,25 +80,27 @@ def priceCalcStr(mat: str, qt: int, town: str) -> str:
             if  qt > 12: delPrice *= 2
         else: delPrice *= 2
 
+    result = ''
     #User alert if large load, typical max is 23 units
-    if qt > 23: print('Delivery of this quantity may require multiple truckloads.\nMultiply delivery price as needed')
+    if qt > 23: result += 'Delivery of this quantity may require multiple truckloads.\nMultiply delivery price as needed\n'
 
     matPrice = matRate * qt
     taxPrice = (matPrice + delPrice) * tax
-    total = matPrice + delPrice + tax
+    total = matPrice + delPrice + taxPrice
 
-    result = f'Material price of ${matRate:0.2f} for {qt} units of {mat} - ${matPrice:0.2f}\n'
+    result += f'Material price of ${matRate:0.2f} for {qt} units of {mat} - ${matPrice:0.2f}\n'
     result += f'Delivery price to {town} - ${delPrice:0.2f}\n'
     result += f'Tax cost - ${taxPrice:0.2f}\n\n'
     result += f'TOTAL PRICE - ${total:0.2f}'
 
     return result
 
-txt = ui.label('Quote appears here...').style('white-space: pre-wrap')
-mat = ui.input(label='Material', autocomplete=mats)
-qt = ui.number(label='Quantity')
-town = ui.input(label='Town', autocomplete=towns)
-ui.button('Calculate Price', on_click=lambda: txt.set_text(priceCalcStr(mat.value, qt.value, town.value)))
+@ui.page('/')
+def index():
+    txt = ui.label('Quote appears here...').style('white-space: pre-wrap')
+    mat = ui.input(label='Material', autocomplete=mats).props('clearable')
+    qt = ui.number(label='Quantity')
+    town = ui.input(label='Town', autocomplete=towns).props('clearable')
+    ui.button('Calculate Price', on_click=lambda: txt.set_text(priceCalcStr(mat.value, qt.value, town.value)))
 
-
-ui.run(on_air='mGIBsWlI9tPtGveU')
+ui.run(on_air='r0sEOv8WBsxIY3Z3')
